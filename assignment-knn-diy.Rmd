@@ -1,0 +1,139 @@
+---
+title: "Assigment - kNN_hcv"
+author: "Ha Trang Nguyen"
+review: "Ngoc Minh Nguyen"
+ 
+date: "17/09/2022"
+output:
+   html_notebook:
+    toc: true
+    toc_depth: 2
+---
+## Setting up
+Loading datasets into scripts
+
+
+```{r}
+library(tidyverse)
+library(googlesheets4)
+library(class)
+library(caret)
+library(GGally)
+library(ggplot2)
+```
+
+------------------------------------------------------------------------
+
+## A. Business understanding
+The data set contains different laboratory values of blood donors, Hepatitis C, Fibrosis, Cirrhosis patients and their demographic values such as age and sex.
+
+## B. Data Understanding
+
+```{r}
+url <- "https://raw.githubusercontent.com/HAN-M3DM-Data-Mining/assignments/master/datasets/KNN-hcvdat0.csv"
+rawDF <- read_csv(url, )
+View(rawDF)
+str(rawDF)
+```
+
+## C. Data Preparation
+### 1. Cleaning data
+```{r}
+cleanDF <- rawDF[-1] 
+head(cleanDF)
+```
+
+
+### 2. Setting labels to category types (defined as either "Donor" or "NoDonor")
+ 
+```{r}
+cleanDF$Category <- factor(cleanDF$Category)
+levels(cleanDF$Category) <- c("Donor", "Donor", "NoDonor", "NoDonor", "NoDonor")
+levels(cleanDF$Category)
+table(cleanDF$Category)
+```
+### 3. Visualizing an multiregression between all elements
+Multiregression
+```{r}
+names(rawDF)
+model <-lm(ALB ~ ALP + ALT + AST + BIL + CHE + CHOL + CREA + GGT + PROT, data= rawDF)
+summary(model)
+```
+
+Visualization interaction and correlation among features
+```{r}
+ggpairs(rawDF, columns = 5:14)
+```
+
+```{r}
+p1 <- ggplot(cleanDF) +
+  geom_point(aes(ALB, ALP, colour = Category))
+p1
+```
+
+
+### 4. Normalizing numeric features
+
+Setting a function of normalization
+```{r}
+normalize <- function(x) { # Function takes in a vector
+  return ((x - min(x)) / (max(x) - min(x))) # distance of item value - minimum vector value divided by the range of all vector values
+}
+```
+
+
+Testing the function 
+```{r}
+testSet1 <- c(1:5)
+testSet2 <- c(1:5) * 10
+
+cat("testSet1:", testSet1, "\n")
+cat("testSet2:", testSet2, "\n")
+cat("Normalized testSet1:", normalize(testSet1), "\n")
+cat("Normalized testSet2:", normalize(testSet2))
+```
+
+
+```{r}
+nCols <- dim(cleanDF)[2]
+cleanDFnorm <- sapply(4:nCols,
+                    function(x) {
+  normalize(cleanDF[, x])
+}) %>% as.data.frame()
+head(cleanDFnorm)
+
+```
+
+### 5. Test sets and train sets
+```{r}
+#Splitting into training and test data sets
+trainDF_feat <- cleanDF_n[1:469,  ]
+testDF_feat <- cleanDF_n[470:569,  ]
+```
+
+```{r}
+#Creating training and test data sets with labels
+trainDF_labels <- cleanDF[1:469,  1]
+testDF_labels <- cleanDF[470:569,  1]
+```
+
+
+## D. Modeling
+
+```{r}
+cleanDF_test_pred <- knn(train = as.matrix(trainDF_feat), test = as.matrix(testDF_feat), cl = as.matrix(trainDF_labels), k = 7)
+head(cleanDF_test_pred)
+confusionMatrix(cleanDF_test_pred, testDF_labels[[1]], positive = NULL, dnn = c("Prediction", "True"))
+dim(cleanDF_test_pred)
+dim(testDF_labels)
+
+```
+
+
+
+## Evaluation and Deployment
+
+
+
+
+reviewer adds suggestions for improving the model
