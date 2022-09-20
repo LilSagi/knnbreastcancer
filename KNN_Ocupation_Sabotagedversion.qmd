@@ -1,0 +1,124 @@
+---
+title: "KNN_Ocupation"
+format: html
+editor: visual
+author: "Ha Trang Nguyen"
+reviewer: "Minh Le Ngoc Nguyen"
+Date: "20/09/2022"
+---
+
+## Model purpose
+
+This model objective is to analyze the data set about characteristics of the occupancy and define whether the occupancy is available or not.
+
+## Setting up/ Installing packages
+
+```{r}
+library(tidyvers) #
+library("class")
+library("carett") #
+library(readr)
+```
+
+## Reading data
+
+```{r}
+link <- "https://raw.githubusercontent.com/HAN-M3DM-Data-Mining/data-mining-s2y2122-LilSagi/master/datasets/KNN-occupancy.csv"
+rawDF <- read_csv(link1) #
+View(rawDF)
+```
+
+## Data understanding
+
+```{r}
+str(rawDf) #
+```
+
+## Data preparation
+
+```{r}
+#Excluding the first column because the value is unique and can not be used in the model
+cleandf <- rawDF[-1]
+head(cleandf)
+```
+
+```{r}
+countOccu <- table(cleandf$Occupancy)
+propOccu <- round(prop.table(countOccu)) * 100 , digits = 1) #
+
+countOccu
+prpOccu #
+```
+
+```{r}
+cleandf$$Occupancy <- factor(cleandf$Occupancy) #
+
+```
+
+```{r}
+summary(cleandf[1:5])
+```
+
+## Normalizing variables (building function of normalization)
+
+```{r}
+normalize <- function(x) { # Function takes in a vector
+  return ((x - min(x)) / (max(x) - min(x))) # distance of item value - minimum vector value divided by the range of all vector values
+}
+
+testSet1 <- c(1:5)
+testSet2 <- c(1:5) * 10
+
+cat("testSet1:", testSet1, "\n")
+cat("testSet2:", testSet2, "\n")
+cat("Normalized testSet1:", normalize(testSet1), "\n")
+cat("Normalized testSet2:", normalize(testSet2))
+```
+
+## Normalizing data variables
+
+```{r}
+?dim
+nCols <- dim(cleandf)[2] -1
+nCols
+cleandf_n <- sapply(1:nCols,
+                    function(x) {
+  normalize(cleandf[,x])
+}) %> as.data.frame()
+cleandf_n #
+
+summary(cleandf_n)
+```
+
+## Splitting data into training and test sets
+
+```{r}
+trainDF_features <- cleandf[1:,6987  ]  #
+trainDF_features
+testDF_features <- cleandf[6988:8143,  ]
+testDF_feature #
+```
+
+```{r}
+train_df_labels <- cleandf[1:6987,  6]
+train_df_labels
+test_df_labels <- cleandf[6988:8143,  6]
+test_df_labels
+```
+
+# Modeling and evaluating
+
+```{r}
+cleandf_test_pred <- knn(train = as.matrix(trainDFfeatures), test = as.matrix(testDF_features), cl = as.matrix(train_df_labels), k = 21) #
+head(cleandf_testpred) #
+is.factor(cleandf_test_pred)
+```
+
+## Making diffusion table
+
+```{r}
+test_df_labels$Occupancy <- factor(test_df_labels,$Occupancy) #
+is.factor(test_df_labels$Occupancy)
+confusionMatrix(cleandf_testpred, test_df_labels[[1]], positive = NULL, 
+                dnn = c("Prediction", "True")) #
+```
